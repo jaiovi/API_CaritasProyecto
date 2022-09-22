@@ -261,9 +261,9 @@ def crud_delete():
     return make_response(jsonify('ok'))
 
 ## AñADIDO PARA VALIDAR SSL
-API_CERT = '{}/SSL/equipo05.tc2007b.tec.mx.cer'.format(module_path())
-API_KEY = '{}/SSL/equipo05.tc2007b.tec.mx.key'.format(module_path())
-CA = '{}/SSL/ca.tc2007b.tec.mx.cer'.format(module_path())
+API_CERT = '{}/.SSL/equipo05.tc2007b.tec.mx.cer'.format(module_path())
+API_KEY = '{}/.SSL/equipo05.tc2007b.tec.mx.key'.format(module_path())
+CA = '{}/.SSL/ca.tc2007b.tec.mx.cer'.format(module_path())
 
 if __name__ == '__main__':
     import ssl
