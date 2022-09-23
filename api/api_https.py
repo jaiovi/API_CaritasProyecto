@@ -10,12 +10,12 @@ mysql_params = {}
 mysql_params['DB_HOST'] = '100.80.80.6'
 mysql_params['DB_NAME'] = 'base_datos_caritas'
 mysql_params['DB_USER'] = 'caritas'
-mysql_params['DB_PASSWORD'] = 'MejorProyecto'
+mysql_params['DB_password'] = 'MejorProyecto'
 
 try:
     cnx = mysql.connector.connect(
         user=mysql_params['DB_USER'],
-        password=mysql_params['DB_PASSWORD'],
+        password=mysql_params['DB_password'],
         host=mysql_params['DB_HOST'],
         database=mysql_params['DB_NAME'], 
         auth_plugin='mysql_native_password'
@@ -38,14 +38,14 @@ def mysql_connect():
     global mysql_params
     cnx = mysql.connector.connect(
         user=mysql_params['DB_USER'],
-        password=mysql_params['DB_PASSWORD'],
+        password=mysql_params['DB_password'],
         host=mysql_params['DB_HOST'],
         database=mysql_params['DB_NAME'], 
         auth_plugin='mysql_native_password'
         )
     return cnx
 
-def read_user_data(table_name, username):
+def read_user_data(table_name, curpUsuarios):
     global cnx
     try:
         try:
@@ -53,7 +53,7 @@ def read_user_data(table_name, username):
         except:
             cnx = mysql_connect()
         cursor = cnx.cursor(dictionary=True)
-        read = 'SELECT * FROM {} WHERE username = "{}"'.format(table_name, username)
+        read = 'SELECT * FROM {} WHERE curpUsuarios = "{}"'.format(table_name, curpUsuarios)
         cursor.execute(read)
         a = cursor.fetchall()
         cnx.commit()
@@ -228,36 +228,36 @@ def docker_logo():
 
 @app.route("/user") #### A REVISAR
 def user():
-    username = request.args.get('nombre', None)
-    d_user = read_user_data('usuario', username)
+    curpUsuarios = request.args.get('curpUsuarios', None)
+    d_user = read_user_data('usuarios', curpUsuarios)
     return make_response(jsonify(d_user))
 
 @app.route("/crud/create", methods=['POST'])
 def crud_create():
     d = request.json
-    idUser = mysql_insert_row_into('users', d)
+    idUser = mysql_insert_row_into('usuarios', d)
     return make_response(jsonify(idUser))
 
 @app.route("/crud/read", methods=['GET'])
 def crud_read():
-    username = request.args.get('username', None)
-    d_user = mysql_read_where('users', {'username': username})
+    curpUsuarios = request.args.get('curpUsuarios', None)
+    d_user = mysql_read_where('usuarios', {'curpUsuarios': curpUsuarios})
     return make_response(jsonify(d_user))
 
 @app.route("/crud/update", methods=['PUT'])
 def crud_update():
     d = request.json
-    d_field = {'password': d['password']}
-    d_where = {'username': d['username']}
-    mysql_update_where('users', d_field, d_where)
+    d_field = {'passwordUsuarios': d['passwordUsuarios']}
+    d_where = {'curpUsuarios': d['curpUsuarios']}
+    mysql_update_where('usuarios', d_field, d_where)
     return make_response(jsonify('ok'))
 
 
 @app.route("/crud/delete", methods=['DELETE'])
 def crud_delete():
     d = request.json
-    d_where = {'username': d['username']}
-    mysql_delete_where('users', d_where)
+    d_where = {'curpUsuarios': d['curpUsuarios']}
+    mysql_delete_where('usuarios', d_where)
     return make_response(jsonify('ok'))
 
 ## AñADIDO PARA VALIDAR SSL
