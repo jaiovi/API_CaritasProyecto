@@ -329,13 +329,13 @@ def program_create():
     return make_response(jsonify(idUser))
 
 @app.route("/programa/editar", methods=['POST'])
-def programa_create():
+def programa_edit():
     d = request.json
     idUser = mysql_insert_row_into('programa', d)
     return make_response(jsonify(idUser))
 
 @app.route("/conexion/crear", methods=['POST'])
-def program_create():
+def conexion_create():
     d = request.json
     idUser = mysql_insert_row_into('programa', d)
     return make_response(jsonify(idUser))
