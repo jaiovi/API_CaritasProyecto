@@ -251,18 +251,18 @@ def crud_read():
     d_user = mysql_read_where('usuarios', {'emailUsuarios': idUsuarios})
     return make_response(jsonify(d_user))
 
-@app.route("/usuarios/actualizar", methods=['PUT']) 
+@app.route("/usuarios/editar", methods=['PUT']) 
 def crud_update():
     d = request.json
     d_field = {
-    "nombreUsuarios":d["nombreUsuarios"],
-    "apellidoPaterno":d["apellidoPaterno"],
-    "apellidoMaterno":d["apellidoMaterno"],
-    "curpUsuarios":d["curpUsuarios"],
-    "emailUsuarios":d["emailUsuarios"],
-    "telefonoUsuarios":d["telefonoUsuarios"],
-    "passUsuarios":d["passUsuarios"]
-}
+        "nombreUsuarios":d["nombreUsuarios"],
+        "apellidoPaterno":d["apellidoPaterno"],
+        "apellidoMaterno":d["apellidoMaterno"],
+        "curpUsuarios":d["curpUsuarios"],
+        "emailUsuarios":d["emailUsuarios"],
+        "telefonoUsuarios":d["telefonoUsuarios"],
+        "passUsuarios":d["passUsuarios"]
+    }
     d_where = {'idUsuarios': d['idUsuarios']} #antes era id
     mysql_update_where('usuarios', d_field, d_where)
     return make_response(jsonify('ok'))
@@ -297,6 +297,22 @@ def admin_create():
     idUser = mysql_insert_row_into('admin', d)
     return make_response(jsonify(idUser))
 
+@app.route("/voluntarios/editar", methods=['PUT']) 
+def voluntarios_actualizar():
+    d = request.json
+    d_field = {"cursoInduccion":d["cursoInduccion"], "ocupacion":d["ocupacion"], "lugarOcupacion":d["lugarOcupacion"], "escolaridad":d["escolaridad"], "domicilio":d["domicilio"]}
+    d_where = {'matricula': d['matricula']} #antes era id
+    mysql_update_where('voluntarios', d_field, d_where)
+    return make_response(jsonify('ok'))
+
+@app.route("/admin/editar", methods=['PUT']) 
+def admin_actualizar():
+    d = request.json
+    d_field = {"departamento":d["departamento"]}
+    d_where = {'matriculaAdmin': d['matriculaAdmin']} #antes era id
+    mysql_update_where('admin', d_field, d_where)
+    return make_response(jsonify('ok'))
+
 @app.route("/usuarios/eliminar", methods=['DELETE'])
 def usuarios_delete():
     d = request.json
@@ -304,6 +320,25 @@ def usuarios_delete():
     mysql_delete_where('usuarios', d_where)
     return make_response(jsonify('ok'))
     
+
+### CONEXIONES ENTRE PROGRAMAS
+@app.route("/programa/crear", methods=['POST'])
+def program_create():
+    d = request.json
+    idUser = mysql_insert_row_into('programa', d)
+    return make_response(jsonify(idUser))
+
+@app.route("/programa/editar", methods=['POST'])
+def programa_create():
+    d = request.json
+    idUser = mysql_insert_row_into('programa', d)
+    return make_response(jsonify(idUser))
+
+@app.route("/conexion/crear", methods=['POST'])
+def program_create():
+    d = request.json
+    idUser = mysql_insert_row_into('programa', d)
+    return make_response(jsonify(idUser))
 
 ## AñADIDO PARA VALIDAR SSL
 API_CERT = '{}/.SSL/equipo05.tc2007b.tec.mx.cer'.format(module_path())
