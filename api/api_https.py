@@ -251,8 +251,24 @@ def crud_read():
     d_user = mysql_read_where('usuarios', {'emailUsuarios': idUsuarios})
     return make_response(jsonify(d_user))
 
-@app.route("/usuarios/actualizarContra", methods=['PUT']) ##ACTUALIZAR LA CONTRASEÑA /crud/update
+@app.route("/usuarios/actualizar", methods=['PUT']) 
 def crud_update():
+    d = request.json
+    d_field = {
+    "nombreUsuarios":d["nombreUsuarios"],
+    "apellidoPaterno":d["apellidoPaterno"],
+    "apellidoMaterno":d["apellidoMaterno"],
+    "curpUsuarios":d["curpUsuarios"],
+    "emailUsuarios":d["emailUsuarios"],
+    "telefonoUsuarios":d["telefonoUsuarios"],
+    "passUsuarios":d["passUsuarios"]
+}
+    d_where = {'idUsuarios': d['idUsuarios']} #antes era id
+    mysql_update_where('usuarios', d_field, d_where)
+    return make_response(jsonify('ok'))
+
+@app.route("/usuarios/actualizarContra", methods=['PUT']) ##ACTUALIZAR LA CONTRASEÑA /crud/update
+def usuarios_actualizarContra():
     d = request.json
     d_field = {'passUsuarios': d['passUsuarios']}
     d_where = {'emailUsuarios': d['emailUsuarios']} #antes era id
@@ -269,13 +285,13 @@ def crud_delete():
 
 
 ## PERSONALIZADO
-@app.route("/voluntarios/create", methods=['POST'])
+@app.route("/voluntarios/crear", methods=['POST'])
 def voluntarios_create():
     d = request.json
     idUser = mysql_insert_row_into('voluntarios', d)
     return make_response(jsonify(idUser))
 
-@app.route("/admin/create", methods=['POST'])
+@app.route("/admin/crear", methods=['POST'])
 def admin_create():
     d = request.json
     idUser = mysql_insert_row_into('admin', d)
