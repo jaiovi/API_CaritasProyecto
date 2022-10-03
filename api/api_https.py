@@ -55,7 +55,7 @@ def read_user_data(table_name, curpUsuarios):
         cursor = cnx.cursor(dictionary=True)
         #read = 'SELECT * FROM {} WHERE curpUsuarios = "{}"'.format(table_name, curpUsuarios)
         #cursor.execute(read)
-        read = 'SELECT * FROM {} WHERE curpUsuarios = %s'.format(table_name)
+        read = 'SELECT * FROM {} WHERE idUsuarios = %s'.format(table_name)
         #tabla = request.args.get('table_name')
         #curpcito = request.args.get('curpUsuarios')
         #table_name % curpUsuarios (tabla, curpcito)
@@ -224,7 +224,7 @@ app = Flask(__name__)
 ##ESTANDAR DE TODOS 
 @app.route("/hello")
 def hello():
-    return "Shakira rocks!\n"
+    return "Caritas de Monterrey!\n"
 
 @app.route("/docker_logo")
 def docker_logo():
@@ -232,30 +232,30 @@ def docker_logo():
     fname = "{}/dockerBlue.png".format(my_path)
     return send_file(fname, as_attachment=False)
 
-@app.route("/user") #### BUSQUEDA POR CURP
+@app.route("/usuario") #### BUSQUEDA POR ID
 def user():
-    curpUsuarios = request.args.get('curpUsuarios', None)
-    d_user = read_user_data('usuarios', curpUsuarios)
+    idUsuarios = request.args.get('idUsuarios', None)
+    d_user = read_user_data('usuarios', idUsuarios)
     return make_response(jsonify(d_user))
 
-@app.route("/crud/create", methods=['POST'])
+@app.route("/usuarios/crear", methods=['POST']) # Crear usuario general "/crud/create"
 def crud_create():
     d = request.json
     idUser = mysql_insert_row_into('usuarios', d)
     return make_response(jsonify(idUser))
 
-@app.route("/crud/read", methods=['GET']) # BUSQ POR ID
+@app.route("/usuarios/login", methods=['GET']) # BUSQUEDA DE EMAIL /crud/read
 def crud_read():
-    idUsuarios = request.args.get('idUsuarios', None)
+    idUsuarios = request.args.get('emailUsuarios', None)
     #curpUsuarios = request.args.get('curpUsuarios', None)
-    d_user = mysql_read_where('usuarios', {'idUsuarios': idUsuarios})
+    d_user = mysql_read_where('usuarios', {'emailUsuarios': idUsuarios})
     return make_response(jsonify(d_user))
 
-@app.route("/crud/update", methods=['PUT'])
+@app.route("/usuarios/actualizarContra", methods=['PUT']) ##ACTUALIZAR LA CONTRASEÑA /crud/update
 def crud_update():
     d = request.json
-    d_field = {'passwordUsuarios': d['passwordUsuarios']}
-    d_where = {'idUsuarios': d['idUsuarios']}
+    d_field = {'passUsuarios': d['passUsuarios']}
+    d_where = {'emailUsuarios': d['emailUsuarios']} #antes era id
     mysql_update_where('usuarios', d_field, d_where)
     return make_response(jsonify('ok'))
 
@@ -266,6 +266,28 @@ def crud_delete():
     d_where = {'idUsuarios': d['idUsuarios']}
     mysql_delete_where('usuarios', d_where)
     return make_response(jsonify('ok'))
+
+
+## PERSONALIZADO
+@app.route("/voluntarios/create", methods=['POST'])
+def voluntarios_create():
+    d = request.json
+    idUser = mysql_insert_row_into('voluntarios', d)
+    return make_response(jsonify(idUser))
+
+@app.route("/admin/create", methods=['POST'])
+def admin_create():
+    d = request.json
+    idUser = mysql_insert_row_into('admin', d)
+    return make_response(jsonify(idUser))
+
+@app.route("/usuarios/eliminar", methods=['DELETE'])
+def usuarios_delete():
+    d = request.json
+    d_where = {'idUsuarios': d['idUsuarios']}
+    mysql_delete_where('usuarios', d_where)
+    return make_response(jsonify('ok'))
+    
 
 ## AñADIDO PARA VALIDAR SSL
 API_CERT = '{}/.SSL/equipo05.tc2007b.tec.mx.cer'.format(module_path())
