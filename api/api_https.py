@@ -128,7 +128,7 @@ def mysql_insert_row_into(table_name, d):
         #print(insert)
         #print(data)
         a= cursor.execute(insert,data)
-        id_new = cursor.lastrowid
+        id_new = cursor.lastrowid #me va a devolver el id autogenerado del registro
         cnx.commit()
         cursor.close()
         return id_new
@@ -221,6 +221,7 @@ def mysql_delete_where(table_name, d_where):
 
 app = Flask(__name__)
 
+##ESTANDAR DE TODOS 
 @app.route("/hello")
 def hello():
     return "Shakira rocks!\n"
@@ -231,7 +232,7 @@ def docker_logo():
     fname = "{}/dockerBlue.png".format(my_path)
     return send_file(fname, as_attachment=False)
 
-@app.route("/user") #### A REVISAR
+@app.route("/user") #### BUSQUEDA POR CURP
 def user():
     curpUsuarios = request.args.get('curpUsuarios', None)
     d_user = read_user_data('usuarios', curpUsuarios)
@@ -243,17 +244,18 @@ def crud_create():
     idUser = mysql_insert_row_into('usuarios', d)
     return make_response(jsonify(idUser))
 
-@app.route("/crud/read", methods=['GET'])
+@app.route("/crud/read", methods=['GET']) # BUSQ POR ID
 def crud_read():
-    curpUsuarios = request.args.get('curpUsuarios', None)
-    d_user = mysql_read_where('usuarios', {'curpUsuarios': curpUsuarios})
+    idUsuarios = request.args.get('idUsuarios', None)
+    #curpUsuarios = request.args.get('curpUsuarios', None)
+    d_user = mysql_read_where('usuarios', {'idUsuarios': idUsuarios})
     return make_response(jsonify(d_user))
 
 @app.route("/crud/update", methods=['PUT'])
 def crud_update():
     d = request.json
     d_field = {'passwordUsuarios': d['passwordUsuarios']}
-    d_where = {'curpUsuarios': d['curpUsuarios']}
+    d_where = {'idUsuarios': d['idUsuarios']}
     mysql_update_where('usuarios', d_field, d_where)
     return make_response(jsonify('ok'))
 
@@ -261,7 +263,7 @@ def crud_update():
 @app.route("/crud/delete", methods=['DELETE'])
 def crud_delete():
     d = request.json
-    d_where = {'curpUsuarios': d['curpUsuarios']}
+    d_where = {'idUsuarios': d['idUsuarios']}
     mysql_delete_where('usuarios', d_where)
     return make_response(jsonify('ok'))
 
