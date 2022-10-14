@@ -84,6 +84,7 @@ def mysql_read_where(table_name, d_where):
             cnx = mysql_connect()
         cursor = cnx.cursor(dictionary=True)
         read = 'SELECT * FROM %s WHERE ' % table_name
+        #read = 'SELECT * FROM {} WHERE '.format(table_name)
         read += '('
         for k,v in d_where.items():
             if v is not None:
@@ -102,7 +103,7 @@ def mysql_read_where(table_name, d_where):
         # Remove last "AND "
         read = read[:-4]
         read += ')'
-        #print(read)
+        print(read)
         cursor.execute(read)
         a = cursor.fetchall()
         cnx.commit()
@@ -225,6 +226,29 @@ def mysql_delete_where(table_name, d_where):
     except Exception as e:
         raise TypeError("mysql_delete_where:%s" % e)
 
+
+def mysql_consultaConexion(matricula):
+    global cnx
+    try:
+        try:
+            cnx.ping(reconnect=False, attempts=1, delay=3)
+        except:
+            cnx = mysql_connect()
+        cursor = cnx.cursor(dictionary=True)
+        #read = 'SELECT * FROM voluntarioPrograma WHERE matricula = %s INNER JOIN programa ON voluntarioPrograma.idPrograma = programa.idPrograma ' % matricula
+        read = """
+        SELECT programa.nombrePrograma, programa.idPrograma, voluntarioPrograma.fechaFin, voluntarioPrograma.fechaInicio, concat(nombreUsuarios, ' ',apellidoPaterno, ' ', apellidoMaterno) as nombreAdmin
+        FROM voluntarioPrograma INNER JOIN programa ON voluntarioPrograma.idPrograma = programa.idPrograma AND matricula = %s
+        INNER JOIN admin ON admin.matriculaAdmin = programa.matriculaAdmin
+        INNER JOIN usuarios ON usuarios.idUsuarios = admin.matriculaAdmin;
+         """ % matricula
+        cursor.execute(read)
+        a = cursor.fetchall()
+        cnx.commit()
+        cursor.close()
+        return a
+    except Exception as e:
+        raise TypeError("consultaConexion error:%s" % e)
 
 app = Flask(__name__)
 
@@ -376,7 +400,8 @@ def programa_edit():
 @app.route("/conexion/consultar", methods=['GET']) # VOLUNTARIO_PROGRAMA
 def conexion_consultar():
     matricula = request.args.get('matricula', None)
-    d_user = mysql_read_where('voluntarioPrograma', {'matricula': matricula})
+    #d_user = mysql_read_where('voluntarioPrograma', {'matricula': matricula})
+    d_user = mysql_consultaConexion(matricula)
     return make_response(jsonify(d_user))
 
 @app.route("/conexion/crear", methods=['POST'])
