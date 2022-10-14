@@ -3,6 +3,8 @@ import json
 import sys
 import mysql.connector
 
+import logging
+
 import os
 
 # Connect to MySQL dB from start
@@ -11,6 +13,11 @@ mysql_params['DB_HOST'] = '100.80.80.6'
 mysql_params['DB_NAME'] = 'base_datos_caritas'
 mysql_params['DB_USER'] = 'caritas'
 mysql_params['DB_password'] = 'MejorProyecto'
+
+LOG_FILE = '/var/log/archivosAPI/api_http.log'
+logging.basicConfig(filename=LOG_FILE, level=logging.DEBUG,
+    format='%(asctime)s.%(msecs)03d %(levelname)s: %(message)s',
+    datefmt='%d-%b-%y %H:%M:%S')
 
 try:
     cnx = mysql.connector.connect(
@@ -221,10 +228,20 @@ def mysql_delete_where(table_name, d_where):
 
 app = Flask(__name__)
 
-##ESTANDAR DE TODOS 
+##ESTANDAR DE TODOS
+
+@app.after_request
+def add_header(r):
+    import secure
+    secure_headers = secure.Secure()
+    secure_headers.framework.flask(r)
+    r.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    r.headers['Content-Security-Policy'] = "default-src 'self';" #*.equipo05.tc2007b.tec.mx
+    return r
+
 @app.route("/hello")
 def hello():
-    return "Caritas de Monterrey!\n"
+    return "Caritas de Monterrey + Los Ilusionistas!\n"
 
 @app.route("/docker_logo")
 def docker_logo():
@@ -236,13 +253,21 @@ def docker_logo():
 def user():
     idUsuarios = request.args.get('idUsuarios', None)
     d_user = read_user_data('usuarios', idUsuarios)
+    if len(d_user) == 0:
+            logging.info("User '{}' not found".format(idUsuarios))
+    elif len(d_user) == 1:
+        logging.info("User '{}' ok".format(idUsuarios))
+    else:
+        logging.warning("User '{}' ({}) resulted in  {} records".format(idUsuarios, request.remote_addr, len(d_user)))
+        return make_response("Error :(", 500)
     return make_response(jsonify(d_user))
 
 @app.route("/usuarios/crear", methods=['POST']) # Crear usuario general "/crud/create"
 def crud_create():
     d = request.json
     idUser = mysql_insert_row_into('usuarios', d)
-    return make_response(jsonify(idUser))
+    return make_response(jsonify( {"idUsuarios":idUser} ))
+    #return make_response(jsonify(idUser))
 
 @app.route("/usuarios/login", methods=['GET']) # BUSQUEDA DE EMAIL /crud/read
 def crud_read():
@@ -322,23 +347,62 @@ def usuarios_delete():
     
 
 ### CONEXIONES ENTRE PROGRAMAS
+@app.route("/programa/consultar", methods=['GET'])
+def programa_consultar():
+    matriculaAdmin = request.args.get('matriculaAdmin', None)
+    d_user = mysql_read_where('programa', {'matriculaAdmin': matriculaAdmin})
+    return make_response(jsonify(d_user))
+
 @app.route("/programa/crear", methods=['POST'])
-def program_create():
+def programa_create():
     d = request.json
     idUser = mysql_insert_row_into('programa', d)
     return make_response(jsonify(idUser))
 
-@app.route("/programa/editar", methods=['POST'])
+@app.route("/programa/editar", methods=['PUT'])
 def programa_edit():
     d = request.json
-    idUser = mysql_insert_row_into('programa', d)
-    return make_response(jsonify(idUser))
+    d_field = {
+        "tipo":d["tipo"],
+        "ubicacion":d["ubicacion"],
+        "matriculaAdmin":d["matriculaAdmin"],
+        "nombrePrograma":d["nombrePrograma"],
+        "descripcionHorario":d["descripcionHorario"]
+    }
+    d_where = {'idPrograma': d['idPrograma']} #antes era id
+    mysql_update_where('programa', d_field, d_where)
+    return make_response(jsonify('ok'))
+
+@app.route("/conexion/consultar", methods=['GET']) # VOLUNTARIO_PROGRAMA
+def conexion_consultar():
+    matricula = request.args.get('matricula', None)
+    d_user = mysql_read_where('voluntarioPrograma', {'matricula': matricula})
+    return make_response(jsonify(d_user))
 
 @app.route("/conexion/crear", methods=['POST'])
-def conexion_create():
+def conexion_crear():
     d = request.json
-    idUser = mysql_insert_row_into('programa', d)
+    idUser = mysql_insert_row_into('voluntarioPrograma', d)
     return make_response(jsonify(idUser))
+
+@app.route("/conexion/editar", methods=['PUT'])
+def conexion_edit():
+    d = request.json
+    d_field = {"matricula":d["matricula"], "idPrograma":d["idPrograma"], "fechaInicio":d["fechaInicio"], "fechaFin":d["fechaFin"]}
+    d_where = {'idVoluntarioPrograma': d['idVoluntarioPrograma']} #antes era id
+    mysql_update_where('voluntarioPrograma', d_field, d_where)
+    return make_response(jsonify('ok'))
+
+## DIAS
+@app.route("/dia/crear", methods=['PUT'])
+def dia_crear():
+    d = request.json
+    idUser = mysql_insert_row_into('dia', d)
+    return make_response(jsonify(idUser))
+
+
+
+
 
 ## AñADIDO PARA VALIDAR SSL
 API_CERT = '{}/.SSL/equipo05.tc2007b.tec.mx.cer'.format(module_path())
