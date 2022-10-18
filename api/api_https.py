@@ -103,7 +103,7 @@ def mysql_read_where(table_name, d_where):
         # Remove last "AND "
         read = read[:-4]
         read += ')'
-        print(read)
+        #print(read)
         cursor.execute(read)
         a = cursor.fetchall()
         cnx.commit()
